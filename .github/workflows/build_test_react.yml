@@ -10,7 +10,7 @@ on:
 jobs:
  build_test:
    # The type of runner that the job will run on
-   runs-on: ubuntu-lates
+   runs-on: ubuntu-latest
    
    strategy:
      matrix:
