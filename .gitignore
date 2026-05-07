@@ -7,7 +7,7 @@
 
 # testing
 /coverage
-
+/public/docs
 # production
 /build
 
