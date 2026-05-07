@@ -14,12 +14,13 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "predeploy":"npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false --collectCoverageFrom=src/*/.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs"
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
+    "jsdoc": "^4.0.5",
     "react-test-renderer": "^19.2.5"
   }
 }
