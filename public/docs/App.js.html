@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useState, useEffect } from "react";
+import { validateForm } from "./validators";
+import "./App.css";
+
+function App() {
+  const [formData, setFormData] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    dateNaissance: "",
+    ville: "",
+    codePostal: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [toaster, setToaster] = useState(false);
+  const [users, setUsers] = useState([]);
+
+  // Charger la liste des inscrits depuis le localStorage au montage
+  useEffect(() => {
+    const stored = localStorage.getItem("users");
+    if (stored) {
+      setUsers(JSON.parse(stored));
+    }
+  }, []);
+
+  /**
+   * Vérifie si tous les champs sont remplis (non vides).
+   * Utilisé pour désactiver le bouton.
+   */
+  const isFormFilled = () => {
+    return Object.values(formData).every((value) => value.trim().length > 0);
+  };
+
+  /**
+   * Met à jour le state du formulaire à chaque changement de champ.
+   */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Efface l'erreur du champ modifié
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  /**
+   * Soumet le formulaire : valide les données, sauvegarde dans le localStorage,
+   * affiche un toaster de succès et vide les champs.
+   */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setToaster(false);
+
+    const result = validateForm(formData);
+
+    if (!result.isValid) {
+      setErrors(result.errors);
+      return;
+    }
+
+    // Sauvegarder dans la liste des utilisateurs
+    const updatedUsers = [...users, formData];
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+
+    // Réinitialiser le formulaire
+    setFormData({
+      nom: "",
+      prenom: "",
+      email: "",
+      dateNaissance: "",
+      ville: "",
+      codePostal: "",
+    });
+    setErrors({});
+
+    // Afficher le toaster
+    setToaster(true);
+    setTimeout(() => {
+      setToaster(false);
+    }, 3000);
+  };
+
+  return (
+    &lt;div className="App">
+      &lt;div className="form-container">
+        &lt;h1>Inscription&lt;/h1>
+        &lt;p className="subtitle">Créez votre compte en remplissant le formulaire ci-dessous.&lt;/p>
+
+        &lt;form onSubmit={handleSubmit} noValidate>
+          &lt;div className="form-row">
+            &lt;div className="form-group">
+              &lt;label htmlFor="nom">Nom&lt;/label>
+              &lt;input
+                type="text"
+                id="nom"
+                name="nom"
+                value={formData.nom}
+                onChange={handleChange}
+                placeholder="Dupont"
+                className={errors.nom ? "input-error" : ""}
+              />
+              {errors.nom &amp;&amp; &lt;span className="error" data-testid="error-nom">{errors.nom}&lt;/span>}
+            &lt;/div>
+
+            &lt;div className="form-group">
+              &lt;label htmlFor="prenom">Prénom&lt;/label>
+              &lt;input
+                type="text"
+                id="prenom"
+                name="prenom"
+                value={formData.prenom}
+                onChange={handleChange}
+                placeholder="Jean"
+                className={errors.prenom ? "input-error" : ""}
+              />
+              {errors.prenom &amp;&amp; &lt;span className="error" data-testid="error-prenom">{errors.prenom}&lt;/span>}
+            &lt;/div>
+          &lt;/div>
+
+          &lt;div className="form-group">
+            &lt;label htmlFor="email">Email&lt;/label>
+            &lt;input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="jean.dupont@email.fr"
+              className={errors.email ? "input-error" : ""}
+            />
+            {errors.email &amp;&amp; &lt;span className="error" data-testid="error-email">{errors.email}&lt;/span>}
+          &lt;/div>
+
+          &lt;div className="form-group">
+            &lt;label htmlFor="dateNaissance">Date de naissance&lt;/label>
+            &lt;input
+              type="date"
+              id="dateNaissance"
+              name="dateNaissance"
+              value={formData.dateNaissance}
+              onChange={handleChange}
+              className={errors.dateNaissance ? "input-error" : ""}
+            />
+            {errors.dateNaissance &amp;&amp; (
+              &lt;span className="error" data-testid="error-dateNaissance">{errors.dateNaissance}&lt;/span>
+            )}
+          &lt;/div>
+
+          &lt;div className="form-row">
+            &lt;div className="form-group">
+              &lt;label htmlFor="ville">Ville&lt;/label>
+              &lt;input
+                type="text"
+                id="ville"
+                name="ville"
+                value={formData.ville}
+                onChange={handleChange}
+                placeholder="Paris"
+                className={errors.ville ? "input-error" : ""}
+              />
+              {errors.ville &amp;&amp; &lt;span className="error" data-testid="error-ville">{errors.ville}&lt;/span>}
+            &lt;/div>
+
+            &lt;div className="form-group">
+              &lt;label htmlFor="codePostal">Code postal&lt;/label>
+              &lt;input
+                type="text"
+                id="codePostal"
+                name="codePostal"
+                value={formData.codePostal}
+                onChange={handleChange}
+                placeholder="75001"
+                className={errors.codePostal ? "input-error" : ""}
+              />
+              {errors.codePostal &amp;&amp; (
+                &lt;span className="error" data-testid="error-codePostal">{errors.codePostal}&lt;/span>
+              )}
+            &lt;/div>
+          &lt;/div>
+
+          &lt;button type="submit" id="submit-btn" disabled={!isFormFilled()}>
+            S'inscrire
+          &lt;/button>
+        &lt;/form>
+      &lt;/div>
+
+      {/* Liste des inscrits */}
+      {users.length > 0 &amp;&amp; (
+        &lt;div className="users-container" data-testid="users-list">
+          &lt;h2>Inscrits ({users.length})&lt;/h2>
+          &lt;div className="users-grid">
+            {users.map((user, index) => (
+              &lt;div key={index} className="user-card" data-testid={`user-card-${index}`}>
+                &lt;div className="user-name">{user.prenom} {user.nom}&lt;/div>
+                &lt;div className="user-detail">📧 {user.email}&lt;/div>
+                &lt;div className="user-detail">📅 {user.dateNaissance}&lt;/div>
+                &lt;div className="user-detail">📍 {user.ville}, {user.codePostal}&lt;/div>
+              &lt;/div>
+            ))}
+          &lt;/div>
+        &lt;/div>
+      )}
+
+      {/* Toaster de succès */}
+      {toaster &amp;&amp; (
+        &lt;div className="toaster" data-testid="toaster-success">
+          ✅ Inscription réussie !
+        &lt;/div>
+      )}
+    &lt;/div>
+  );
+}
+
+export default App;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#fillForm">fillForm</a></li><li><a href="global.html#validateAge">validateAge</a></li><li><a href="global.html#validateCity">validateCity</a></li><li><a href="global.html#validateEmail">validateEmail</a></li><li><a href="global.html#validateForm">validateForm</a></li><li><a href="global.html#validateName">validateName</a></li><li><a href="global.html#validatePostalCode">validatePostalCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 13:37:22 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
