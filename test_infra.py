@@ -27,25 +27,26 @@ def check_port(host, port):
     except OSError:
         return False
 
-def check_http(url):
+def check_http(url, verbose=True):
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         response = urllib.request.urlopen(req, timeout=5)
         return response.getcode() == 200
     except Exception as e:
-        print(f"HTTP check failed for {url}: {e}")
+        if verbose:
+            print(f"HTTP check failed for {url}: {e}")
         return False
 
 def wait_for_services():
     print(f"Waiting for services to boot (up to 90 seconds)... Database port is {DB_PORT} (localhost) / 3306 (db)")
     for i in range(45):
         mysql_ok = check_port("localhost", DB_PORT) or check_port("db", 3306)
-        api_ok = check_port("localhost", 8000) or check_port("api", 8000)
-        adminer_ok = check_port("localhost", 8080) or check_port("adminer", 8080)
-        react_ok = check_port("localhost", 3000) or check_port("react", 3000)
+        api_ok = check_http("http://localhost:8000/users", verbose=False)
+        adminer_ok = check_http("http://localhost:8080", verbose=False)
+        react_ok = check_http("http://localhost:3000", verbose=False)
         
         if mysql_ok and api_ok and adminer_ok and react_ok:
-            print(f"✅ All ports are open after {i * 2} seconds!")
+            print(f"✅ All services are up and healthy after {i * 2} seconds!")
             return True
             
         print(f"Waiting... (MySQL: {'OK' if mysql_ok else 'DOWN'}, API: {'OK' if api_ok else 'DOWN'}, Adminer: {'OK' if adminer_ok else 'DOWN'}, React: {'OK' if react_ok else 'DOWN'})")
