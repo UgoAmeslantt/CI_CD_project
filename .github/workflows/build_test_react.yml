@@ -60,7 +60,6 @@ jobs:
       - name: Cypress E2E run
         uses: cypress-io/github-action@v6
         with:
-          start: npm start
           wait-on: 'http://localhost:3000'
           spec: cypress/e2e/projet_individuel.cy.js
 
