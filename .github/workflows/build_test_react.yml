@@ -63,6 +63,20 @@ jobs:
           wait-on: 'http://localhost:3000'
           spec: cypress/e2e/projet_individuel.cy.js
 
+      # --- 4.5. PUSH IMAGES TO DOCKER HUB ---
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build and push Frontend Docker image
+        run: |
+          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}/cicd-frontend:latest" -f ./front/DockerfileFront .
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/cicd-frontend:latest"
+
+      - name: Build and push Backend Docker image
+        run: |
+          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest" -f ./server/DockerfileServer .
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest"
+
       # --- 5. BUILD FOR DEPLOYMENT ---
       - name: Build React application
         env:
