@@ -65,6 +65,8 @@ jobs:
 
       # --- 5. BUILD FOR DEPLOYMENT ---
       - name: Build React application
+        env:
+          REACT_APP_API_URL: https://cicd-project-bay-omega.vercel.app
         run: npm run build
 
       - name: Setup Pages
