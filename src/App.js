@@ -61,6 +61,7 @@ function App() {
     if (typeof jest === "undefined") {
       fetchUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const isFormFilled = () => {
