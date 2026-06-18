@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.18.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-scripts": "5.0.1",
@@ -20,7 +21,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false --collectCoverageFrom=src/* --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js",
     "eject": "react-scripts eject",
-    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs"
+    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs",
+    "cypress:run": "cypress run",
+    "cypress:open": "cypress open"
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "cypress": "^15.17.0",
     "gh-pages": "^6.3.0",
     "jsdoc": "^4.0.5",
     "react-test-renderer": "^19.2.5"

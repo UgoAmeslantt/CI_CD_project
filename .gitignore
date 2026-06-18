@@ -22,3 +22,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Python & virtualenv
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+

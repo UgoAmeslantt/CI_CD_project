@@ -1,0 +1,15 @@
+FROM python:3.9
+
+WORKDIR /server
+
+# Copie le fichier de ton code dans le conteneur
+COPY ./main.py /server/main.py
+
+# Installe les dépendances requises pour l'API
+RUN pip install mysql-connector-python fastapi uvicorn
+
+# On expose le port 8000 (le port par défaut de FastAPI/Uvicorn)
+EXPOSE 8000
+
+# Commande pour lancer l'API au démarrage du conteneur
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

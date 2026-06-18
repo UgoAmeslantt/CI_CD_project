@@ -1,5 +1,8 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import App from "./App";
+import axios from "axios";
+
+jest.mock("axios");
 
 // ============================================================
 // Tests d'intégration — Composant App (Formulaire d'inscription)
@@ -28,7 +31,23 @@ beforeEach(() => {
   localStorageMock.clear();
   localStorageMock.getItem.mockClear();
   localStorageMock.setItem.mockClear();
+  sessionStorage.clear();
   jest.useFakeTimers();
+
+  // Axios dynamic mock implementation
+  axios.get.mockImplementation((url, config) => {
+    const stored = localStorageMock.getItem("users");
+    const users = stored ? JSON.parse(stored) : [];
+    return Promise.resolve({ data: { utilisateurs: users } });
+  });
+
+  axios.post.mockImplementation((url, data) => {
+    return Promise.resolve({ data: { status: "success" } });
+  });
+
+  axios.delete.mockImplementation((url, config) => {
+    return Promise.resolve({ data: { status: "success" } });
+  });
 });
 
 afterEach(() => {
@@ -417,3 +436,106 @@ describe("Affichage de la liste des inscrits", () => {
     expect(card).toHaveTextContent("75001");
   });
 });
+
+// ============================================================
+// Espace Administration
+// ============================================================
+describe("Espace Administration", () => {
+  test("affiche le bouton Espace Admin au chargement", () => {
+    render(<App />);
+    expect(screen.getByTestId("admin-toggle-btn")).toHaveTextContent("Espace Admin");
+  });
+
+  test("affiche le formulaire de connexion admin au clic sur le bouton", () => {
+    render(<App />);
+    const toggleBtn = screen.getByTestId("admin-toggle-btn");
+    fireEvent.click(toggleBtn);
+    expect(screen.getByTestId("login-container")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByLabelText("Mot de passe")).toBeInTheDocument();
+  });
+
+  test("connexion admin avec succès et affichage des contrôles admin", async () => {
+    axios.post.mockResolvedValueOnce({
+      data: { token: "admin-token-ugo", user: { email: "ugo.ameslant@ynov.com" } }
+    });
+    axios.get.mockResolvedValueOnce({
+      data: {
+        utilisateurs: [
+          {
+            id: 1,
+            nom: "Dupont",
+            prenom: "Jean",
+            email: "jean.dupont@email.fr",
+            dateNaissance: "1990-05-15",
+            ville: "Paris",
+            codePostal: "75001",
+            is_admin: false
+          }
+        ]
+      }
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByTestId("admin-toggle-btn"));
+
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ugo.ameslant@ynov.com" } });
+    fireEvent.change(screen.getByLabelText("Mot de passe"), { target: { value: "PvdrTAzTeR247sDnAZBr" } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /se connecter/i }));
+    });
+
+    expect(screen.getByTestId("admin-toggle-btn")).toHaveTextContent("Déconnexion Admin");
+    
+    expect(screen.getByTestId("user-email-0")).toHaveTextContent("jean.dupont@email.fr");
+    expect(screen.getByTestId("user-date-0")).toHaveTextContent("1990-05-15");
+    
+    expect(screen.getByTestId("delete-btn-0")).toBeInTheDocument();
+  });
+
+  test("suppression d'un utilisateur par l'admin", async () => {
+    axios.post.mockResolvedValueOnce({
+      data: { token: "admin-token-ugo", user: { email: "ugo.ameslant@ynov.com" } }
+    });
+    axios.get.mockResolvedValueOnce({
+      data: {
+        utilisateurs: [
+          {
+            id: 1,
+            nom: "Dupont",
+            prenom: "Jean",
+            email: "jean.dupont@email.fr",
+            dateNaissance: "1990-05-15",
+            ville: "Paris",
+            codePostal: "75001",
+            is_admin: false
+          }
+        ]
+      }
+    });
+    axios.delete.mockResolvedValueOnce({ data: { status: "success" } });
+    axios.get.mockResolvedValueOnce({ data: { utilisateurs: [] } });
+
+    render(<App />);
+    fireEvent.click(screen.getByTestId("admin-toggle-btn"));
+
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ugo.ameslant@ynov.com" } });
+    fireEvent.change(screen.getByLabelText("Mot de passe"), { target: { value: "PvdrTAzTeR247sDnAZBr" } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /se connecter/i }));
+    });
+
+    const deleteBtn = screen.getByTestId("delete-btn-0");
+    await act(async () => {
+      fireEvent.click(deleteBtn);
+    });
+
+    expect(axios.delete).toHaveBeenCalledWith(
+      expect.stringContaining("/users/1"),
+      expect.any(Object)
+    );
+  });
+});
+
