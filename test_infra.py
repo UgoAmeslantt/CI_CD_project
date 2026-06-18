@@ -2,6 +2,23 @@ import socket
 import urllib.request
 import sys
 import time
+import os
+
+def get_db_port():
+    if os.path.exists(".env"):
+        try:
+            with open(".env", "r") as f:
+                for line in f:
+                    if line.strip().startswith("DB_PORT="):
+                        return int(line.strip().split("=")[1])
+        except Exception:
+            pass
+    try:
+        return int(os.getenv("DB_PORT", "3306"))
+    except ValueError:
+        return 3306
+
+DB_PORT = get_db_port()
 
 def check_port(host, port):
     try:
@@ -20,9 +37,9 @@ def check_http(url):
         return False
 
 def wait_for_services():
-    print("Waiting for services to boot (up to 90 seconds)...")
+    print(f"Waiting for services to boot (up to 90 seconds)... Database port is {DB_PORT} (localhost) / 3306 (db)")
     for i in range(45):
-        mysql_ok = check_port("localhost", 3306) or check_port("db", 3306)
+        mysql_ok = check_port("localhost", DB_PORT) or check_port("db", 3306)
         api_ok = check_port("localhost", 8000) or check_port("api", 8000)
         adminer_ok = check_port("localhost", 8080) or check_port("adminer", 8080)
         react_ok = check_port("localhost", 3000) or check_port("react", 3000)
@@ -39,15 +56,16 @@ def run_infra_tests():
     print("Starting infrastructure tests...")
     
     # 1. Verification de la base de donnees
-    mysql_hosts = ["localhost", "db"]
     mysql_up = False
-    for host in mysql_hosts:
-        if check_port(host, 3306):
-            print(f"✅ MySQL database port is open on {host}:3306")
-            mysql_up = True
-            break
+    if check_port("localhost", DB_PORT):
+        print(f"✅ MySQL database port is open on localhost:{DB_PORT}")
+        mysql_up = True
+    elif check_port("db", 3306):
+        print("✅ MySQL database port is open on db:3306")
+        mysql_up = True
+        
     if not mysql_up:
-        print("❌ MySQL database port 3306 is closed.")
+        print(f"❌ MySQL database port {DB_PORT} (localhost) or 3306 (db) is closed.")
         return False
 
     # 2. Verification de l'API FastAPI
